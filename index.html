@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            margin: 0 auto;
+            width: 900px;
+            font-family: 'Titan One', sans-serif;
+            padding-top: 10px;
+        }
+
+        #chessBoard {
+            border-radius: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .player-one {
+            color: red;
+            padding-bottom: 10px;
+        }
+
+        .player-two {
+            color: blue;
+        }
+
+        h2 {
+            margin: 0;
+            text-align: center;
+        }
+
+        #menu{
+            position: absolute;
+            right: 150px;
+            top: 50px;
+        }
+        #menu > label{
+            text-align: right;
+        }
+
+    </style>
+    <link href="https://fonts.googleapis.com/css?family=Titan+One" rel="stylesheet">
+</head>
+<body>
+    <h2 class="player-one">Player A</h2>
+    <canvas id="chessBoard" width="900" height="700"></canvas>
+    <h2 class="player-two">Player B</h2>
+    <div id="menu"></div>
+<script src="canvas.js"></script>
+<script src="unit.js"></script>
+</body>
+</html>
