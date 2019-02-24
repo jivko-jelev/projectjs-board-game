@@ -3,8 +3,6 @@ var activePlayer = 0;
 var stage = 0;
 var selectedUnit;
 var action;
-var selectedX;
-var selectedY;
 
 class Unit {
     constructor(atack, shield, health, atackingSquares, speed) {
@@ -74,11 +72,12 @@ function showAvailableFieldsForMove() {
             (selectedUnit instanceof Knight || selectedUnit instanceof Elf || (selectedUnit instanceof Dwarf && unitsOnBoard[position[0]][position[1] + 1] === undefined))) {
             availableFields[position[0]][position[1] + i + 1] = true;
         }
-        if (position[0] - i > 0 && unitsOnBoard[position[0] - i - 1][position[1]] === undefined) {
+        if (position[0] - i > 0 && unitsOnBoard[position[0] - i - 1][position[1]] === undefined &&
+            (selectedUnit instanceof Knight || selectedUnit instanceof Elf || (selectedUnit instanceof Dwarf && unitsOnBoard[position[0] - 1][position[1]] === undefined))) {
             availableFields[position[0] - i - 1][position[1]] = true;
         }
-        if (position[0] + i < 7 && unitsOnBoard[position[0] + i + 1][position[1]] === undefined) {
-            // console.log(unitsOnBoard[position[0]][position[1]]);
+        if (position[0] + i < 7 && unitsOnBoard[position[0] + i + 1][position[1]] === undefined &&
+            (selectedUnit instanceof Knight || selectedUnit instanceof Elf || (selectedUnit instanceof Dwarf && unitsOnBoard[position[0] + 1][position[1]] === undefined))) {
             if (!(selectedUnit instanceof Dwarf && i == 1 && unitsOnBoard[position[0] + i][position[1]] !== undefined)) {
                 availableFields[position[0] + i + 1][position[1]] = true;
             }
