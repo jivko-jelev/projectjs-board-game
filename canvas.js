@@ -58,6 +58,7 @@ Board.prototype.show = function () {
             }
         }
     }
+
 }
 
 Board.prototype.showAvailableField = function (x, y) {
