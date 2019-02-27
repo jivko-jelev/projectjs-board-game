@@ -1,8 +1,9 @@
-var availableFields = [[], [], [], [], [], [], [], []];
+availableFields = [[], [], [], [], [], [], []];
 var activePlayer = 0;
+var score = [0, 0];
 var stage = 0;
 var selectedUnit;
-var action;
+var action = 'atack';
 
 class Unit {
     constructor(atack, shield, health, atackingSquares, speed) {
@@ -35,6 +36,8 @@ class Dwarf extends Unit {
 
 function changeActivePlayer() {
     activePlayer = activePlayer === 0 ? 1 : 0;
+    selectedUnit = undefined;
+    board.show();
 }
 
 function fieldIsFree(x, y) {
@@ -60,96 +63,218 @@ function getSelectedUnitPosition() {
 
 
 function showAvailableFieldsForMove() {
-    board.show();
+    if (selectedUnit === undefined) {
+        return;
+    }
     var position = this.getSelectedUnitPosition();
 
     for (let i = 0; i < selectedUnit.speed; i++) {
         if (position[1] - i > 0 && unitsOnBoard[position[0]][position[1] - i - 1] === undefined &&
-            (selectedUnit instanceof Knight || selectedUnit instanceof Elf || (selectedUnit instanceof Dwarf && unitsOnBoard[position[0]][position[1] - 1] === undefined))) {
+            (unitsOnBoard[position[0]][position[1] - 1] === undefined)) {
             availableFields[position[0]][position[1] - i - 1] = true;
         }
-        if (position[1] + i < 9 && unitsOnBoard[position[0]][position[1] + i + 1] === undefined &&
-            (selectedUnit instanceof Knight || selectedUnit instanceof Elf || (selectedUnit instanceof Dwarf && unitsOnBoard[position[0]][position[1] + 1] === undefined))) {
+        if (position[1] + i < 8 && unitsOnBoard[position[0]][position[1] + i + 1] === undefined &&
+            (unitsOnBoard[position[0]][position[1] + 1] === undefined)) {
             availableFields[position[0]][position[1] + i + 1] = true;
         }
         if (position[0] - i > 0 && unitsOnBoard[position[0] - i - 1][position[1]] === undefined &&
-            (selectedUnit instanceof Knight || selectedUnit instanceof Elf || (selectedUnit instanceof Dwarf && unitsOnBoard[position[0] - 1][position[1]] === undefined))) {
+            (unitsOnBoard[position[0] - 1][position[1]] === undefined)) {
             availableFields[position[0] - i - 1][position[1]] = true;
         }
         if (position[0] + i < 7 && unitsOnBoard[position[0] + i + 1][position[1]] === undefined &&
-            (selectedUnit instanceof Knight || selectedUnit instanceof Elf || (selectedUnit instanceof Dwarf && unitsOnBoard[position[0] + 1][position[1]] === undefined))) {
+            (unitsOnBoard[position[0] + 1][position[1]] === undefined)) {
             if (!(selectedUnit instanceof Dwarf && i == 1 && unitsOnBoard[position[0] + i][position[1]] !== undefined)) {
                 availableFields[position[0] + i + 1][position[1]] = true;
             }
         }
+        if (i === 1) {
+            break;
+        }
     }
+
     if (selectedUnit instanceof Dwarf || selectedUnit instanceof Elf) {
         if (position[0] < 6 && position[1] > 0 && unitsOnBoard[position[0] + 1][position[1] - 1] === undefined &&
-            ((selectedUnit instanceof Dwarf && (unitsOnBoard[position[0]][position[1] - 1] === undefined || unitsOnBoard[position[0] + 1][position[1]] === undefined)) ||
-                selectedUnit instanceof Elf)) {
+            (unitsOnBoard[position[0]][position[1] - 1] === undefined || unitsOnBoard[position[0] + 1][position[1]] === undefined)) {
             availableFields[position[0] + 1][position[1] - 1] = true;
         }
         if (position[0] < 6 && position[1] < 8 && unitsOnBoard[position[0] + 1][position[1] + 1] === undefined &&
-            ((selectedUnit instanceof Dwarf && (unitsOnBoard[position[0]][position[1] + 1] === undefined || unitsOnBoard[position[0] + 1][position[1]] === undefined)) ||
-                selectedUnit instanceof Elf)) {
+            (unitsOnBoard[position[0]][position[1] + 1] === undefined || unitsOnBoard[position[0] + 1][position[1]] === undefined)) {
             availableFields[position[0] + 1][position[1] + 1] = true;
         }
 
         if (position[0] > 0 && position[1] > 0 && unitsOnBoard[position[0] - 1][position[1] - 1] === undefined &&
-            ((selectedUnit instanceof Dwarf && (unitsOnBoard[position[0]][position[1] - 1] === undefined || unitsOnBoard[position[0] - 1][position[1]] === undefined)) ||
-                selectedUnit instanceof Elf)) {
+            (unitsOnBoard[position[0]][position[1] - 1] === undefined || unitsOnBoard[position[0] - 1][position[1]] === undefined)) {
             availableFields[position[0] - 1][position[1] - 1] = true;
         }
         if (position[0] > 0 && position[1] < 8 && unitsOnBoard[position[0] - 1][position[1] + 1] === undefined &&
-            ((selectedUnit instanceof Dwarf && (unitsOnBoard[position[0]][position[1] + 1] === undefined || unitsOnBoard[position[0] - 1][position[1]] === undefined)) ||
-                selectedUnit instanceof Elf)) {
+            (unitsOnBoard[position[0]][position[1] + 1] === undefined || unitsOnBoard[position[0] - 1][position[1]] === undefined)) {
             availableFields[position[0] - 1][position[1] + 1] = true;
         }
     }
 
     if (selectedUnit instanceof Elf) {
-        if (position[0] < 6 && position[1] > 0 && unitsOnBoard[position[0] + 1][position[1] - 2] === undefined) {
+        if (position[1] > 2 && unitsOnBoard[position[0]][position[1] - 3] === undefined &&
+            unitsOnBoard[position[0]][position[1] - 1] === undefined && unitsOnBoard[position[0]][position[1] - 2] === undefined) {
+            availableFields[position[0]][position[1] - 3] = true;
+        }
+        if (position[1] < 6 && unitsOnBoard[position[0]][position[1] + 3] === undefined &&
+            unitsOnBoard[position[0]][position[1] + 1] === undefined && unitsOnBoard[position[0]][position[1] + 2] === undefined) {
+            availableFields[position[0]][position[1] + 3] = true;
+        }
+        if (position[0] > 2 && unitsOnBoard[position[0] - 3][position[1]] === undefined &&
+            unitsOnBoard[position[0] - 1][position[1]] === undefined && unitsOnBoard[position[0] - 2][position[1]] === undefined) {
+            availableFields[position[0] - 3][position[1]] = true;
+        }
+        if (position[0] < 5 && unitsOnBoard[position[0] + 3][position[1]] === undefined &&
+            unitsOnBoard[position[0] + 1][position[1]] === undefined && unitsOnBoard[position[0] + 2][position[1]] === undefined) {
+            availableFields[position[0] + 3][position[1]] = true;
+        }
+
+
+        if (unitsOnBoard[position[0] + 1][position[1] - 2] === undefined &&
+            ((unitsOnBoard[position[0]][position[1] - 1] === undefined && unitsOnBoard[position[0]][position[1] - 2] === undefined) ||
+                // (unitsOnBoard[position[0]][position[1] - 1] === undefined && unitsOnBoard[position[0] + 1][position[1] - 1] === undefined) ||
+                (unitsOnBoard[position[0] + 1][position[1]] === undefined && unitsOnBoard[position[0] + 1][position[1] - 1] === undefined))) {
             availableFields[position[0] + 1][position[1] - 2] = true;
         }
 
-        if (position[0] < 6 && position[1] < 7 && unitsOnBoard[position[0] + 1][position[1] + 2] === undefined) {
+        if (unitsOnBoard[position[0] + 1][position[1] + 2] === undefined &&
+            ((unitsOnBoard[position[0]][position[1] + 1] === undefined && unitsOnBoard[position[0]][position[1] + 2] === undefined) ||
+                (unitsOnBoard[position[0] + 1][position[1]] === undefined && unitsOnBoard[position[0] + 1][position[1] + 1] === undefined))) {
             availableFields[position[0] + 1][position[1] + 2] = true;
         }
 
-        if (position[0] < 6 && position[1] > 0 && unitsOnBoard[position[0] + 2][position[1] - 1] === undefined) {
+        if (position[0] < 6 && position[1] > 0 && unitsOnBoard[position[0] + 2][position[1] - 1] === undefined &&
+            ((unitsOnBoard[position[0]][position[1] - 1] === undefined && unitsOnBoard[position[0] + 1][position[1] - 1] === undefined) ||
+                (unitsOnBoard[position[0] + 1][position[1]] === undefined && unitsOnBoard[position[0] + 2][position[1]] === undefined))) {
             availableFields[position[0] + 2][position[1] - 1] = true;
         }
 
-        if (position[0] < 6 && position[1] < 7 && unitsOnBoard[position[0] + 1][position[1] + 1] === undefined) {
+        if (position[0] < 6 && position[1] < 7 && unitsOnBoard[position[0] + 2][position[1] + 1] === undefined &&
+            ((unitsOnBoard[position[0]][position[1] + 1] === undefined && unitsOnBoard[position[0] + 1][position[1] + 1] === undefined) ||
+                (unitsOnBoard[position[0] + 1][position[1]] === undefined && unitsOnBoard[position[0] + 2][position[1]] === undefined))) {
             availableFields[position[0] + 2][position[1] + 1] = true;
         }
 
-
-        if (position[0] > 0 && position[1] > 1 && unitsOnBoard[position[0] - 1][position[1] - 2] === undefined){
+        if (position[0] > 0 && position[1] > 1 && unitsOnBoard[position[0] - 1][position[1] - 2] === undefined &&
+            ((unitsOnBoard[position[0]][position[1] - 1] === undefined && unitsOnBoard[position[0]][position[1] - 2] === undefined) ||
+                (unitsOnBoard[position[0] - 1][position[1]] === undefined && unitsOnBoard[position[0] - 1][position[1] - 1] === undefined))) {
             availableFields[position[0] - 1][position[1] - 2] = true;
         }
 
-        if (position[0] > 0 && position[1] < 7 && unitsOnBoard[position[0] - 1][position[1] + 2] === undefined) {
+        if (position[0] > 0 && position[1] < 7 && unitsOnBoard[position[0] - 1][position[1] + 2] === undefined &&
+            ((unitsOnBoard[position[0] - 1][position[1]] === undefined && unitsOnBoard[position[0] - 1][position[1] + 1] === undefined) ||
+                (unitsOnBoard[position[0]][position[1] + 1] === undefined && unitsOnBoard[position[0]][position[1] + 2] === undefined))) {
             availableFields[position[0] - 1][position[1] + 2] = true;
         }
 
-        if (position[0] > 1 && position[1] > 0 && unitsOnBoard[position[0] - 2][position[1] - 1] === undefined) {
+        if (position[0] > 1 && position[1] > 0 && unitsOnBoard[position[0] - 2][position[1] - 1] === undefined &&
+            ((unitsOnBoard[position[0]][position[1] - 1] === undefined && unitsOnBoard[position[0] - 1][position[1] - 1] === undefined) ||
+                (unitsOnBoard[position[0] - 1][position[1]] === undefined && unitsOnBoard[position[0] - 2][position[1]] === undefined))) {
             availableFields[position[0] - 2][position[1] - 1] = true;
         }
 
-        if (position[0] > 1 && position[1] < 7 && unitsOnBoard[position[0] - 2][position[1] + 1] === undefined) {
+        if (position[0] > 1 && position[1] < 7 && unitsOnBoard[position[0] - 2][position[1] + 1] === undefined &&
+            ((unitsOnBoard[position[0]][position[1] + 1] === undefined && unitsOnBoard[position[0] - 1][position[1] + 1] === undefined) ||
+                (unitsOnBoard[position[0] - 1][position[1]] === undefined && unitsOnBoard[position[0] - 2][position[1]] === undefined))) {
             availableFields[position[0] - 2][position[1] + 1] = true;
         }
-
-
     }
 
     board.show();
 }
 
+function enemy(x, y) {
+    return (activePlayer === 1 && unitsOnBoard[y][x].owner === 0) ||
+        (activePlayer === 0 && unitsOnBoard[y][x].owner === 1);
+}
+
+function canAttack(x, y) {
+    if (x >= 0 && x < 9 && y >= 0 && y < 7) {
+        if (unitsOnBoard[y][x] !== undefined) {
+            // console.log(x + ':' + y);
+            // console.log(unitsOnBoard[y][x] === true);
+            if (unitsOnBoard[y][x] === true) {
+                return true;
+            }
+            return unitsOnBoard[y][x] !== undefined && (unitsOnBoard[y][x].constructor.name == 'Dwarf' || unitsOnBoard[y][x].constructor.name == 'Elf' ||
+                unitsOnBoard[y][x].constructor.name == 'Knight' || unitsOnBoard[y][x] === true) && enemy(x, y);
+        }
+    }
+}
+
+function fieldIsClearOrWithObstacle(y, x) {
+    return y >= 0 && y < 7 && x >= 0 && x < 9 && (unitsOnBoard[y][x] === undefined || unitsOnBoard[y][x] === true);
+}
+
+function fieldIsClear(y, x) {
+    return y >= 0 && y < 7 && x >= 0 && x < 9 && unitsOnBoard[y][x] === undefined;
+}
+
+function showAvailableFieldsForAtack() {
+    var position = this.getSelectedUnitPosition();
+
+    if (selectedUnit !== undefined) {
+
+        if (unitsOnBoard[position[0]][position[1]].constructor.name == 'Knight') {
+            if (canAttack(position[1], position[0] - 1)) {
+                availableFields[position[0] - 1][position[1]] = true;
+            }
+            if (canAttack(position[1], position[0] + 1)) {
+                availableFields[position[0] + 1][position[1]] = true;
+            }
+            if (canAttack(position[1] - 1, position[0])) {
+                availableFields[position[0]][position[1] - 1] = true;
+            }
+            if (canAttack(position[1] + 1, position[0])) {
+                availableFields[position[0]][position[1] + 1] = true;
+            }
+        } else if (unitsOnBoard[position[0]][position[1]].constructor.name == 'Dwarf') {
+            if (fieldIsClear(position[0], position[1] - 1) && canAttack(position[1] - 2, position[0])) {
+                availableFields[position[0]][position[1] - 2] = true;
+            }
+
+            if (fieldIsClear(position[0] + 1, position[1]) && canAttack(position[1], position[0] + 2)) {
+                availableFields[position[0] + 2][position[1]] = true;
+            }
+
+            if (fieldIsClear(position[0], position[1] + 1) && canAttack(position[1] + 2, position[0])) {
+                availableFields[position[0]][position[1] + 2] = true;
+            }
+
+            if (fieldIsClear(position[0] - 1, position[1]) && canAttack(position[1], position[0] - 2)) {
+                availableFields[position[0] - 2][position[1]] = true;
+            }
+
+        } else if (unitsOnBoard[position[0]][position[1]].constructor.name == 'Elf') {
+            if (fieldIsClearOrWithObstacle(position[0], position[1] - 1) && fieldIsClearOrWithObstacle(position[0], position[1] - 2) &&
+                canAttack(position[1] - 3, position[0])) {
+                availableFields[position[0]][position[1] - 3] = true;
+            }
+
+            if (fieldIsClearOrWithObstacle(position[0] + 1, position[1]) && fieldIsClearOrWithObstacle(position[0] + 2, position[1]) &&
+                canAttack(position[1], position[0] + 3)) {
+                availableFields[position[0] + 3][position[1]] = true;
+            }
+
+            if (fieldIsClearOrWithObstacle(position[0], position[1] + 1) && fieldIsClearOrWithObstacle(position[0], position[1] + 2) &&
+                canAttack(position[1] + 3, position[0])) {
+                availableFields[position[0]][position[1] + 3] = true;
+            }
+
+            if (fieldIsClearOrWithObstacle(position[0] - 1, position[1]) && fieldIsClearOrWithObstacle(position[0] - 2, position[1]) &&
+                canAttack(position[1], position[0] - 3)) {
+                availableFields[position[0] - 3][position[1]] = true;
+            }
+
+        }
+
+        board.show();
+    }
+}
+
 
 function clearSelection() {
-    selectedUnit = undefined;
     availableFields = [[], [], [], [], [], [], [], []];
     board.show();
 }
@@ -200,6 +325,8 @@ board.canvas.addEventListener("click", function (e) {
                 numUnits('Elf', 0) === 2 && numUnits('Elf', 1) === 2 &&
                 numUnits('Knight', 0) === 2 && numUnits('Knight', 1) === 2) {
                 stage = 1;
+                generateObstacles();
+                showMenuActions();
                 board.show();
             } else {
                 board.hideForbiddenFields();
@@ -210,6 +337,7 @@ board.canvas.addEventListener("click", function (e) {
         document.onkeydown = function (evt) {
             evt = evt || window.event;
             if (evt.keyCode == 27) {
+                selectedUnit = undefined;
                 clearSelection();
             }
         };
@@ -217,13 +345,17 @@ board.canvas.addEventListener("click", function (e) {
         document.getElementsByName('unit')[0].addEventListener('change', function () {
             action = getSelectedRadio();
             if (action === 'atack') {
-                board.showAvailableFieldsForAtack();
+                clearSelection();
+                showAvailableFieldsForAtack();
             }
         });
         document.getElementsByName('unit')[1].addEventListener('change', function () {
             action = getSelectedRadio();
             if (action === 'move') {
+                clearSelection();
                 showAvailableFieldsForMove();
+                // console.log(selectedUnit);
+                // console.log(activePlayer);
             }
         });
         if (unitsOnBoard[y][x] !== undefined && unitsOnBoard[y][x].owner === activePlayer &&
@@ -232,28 +364,74 @@ board.canvas.addEventListener("click", function (e) {
             selectedUnit = unitsOnBoard[y][x];
             if (action !== undefined && action === 'move') {
                 showAvailableFieldsForMove();
+            } else if (action !== undefined && action === 'atack') {
+                showAvailableFieldsForAtack();
             }
         }
 
+        // alert(action);
         if (action == 'move' && availableFields[y][x] === true && selectedUnit != undefined && selectedUnit.owner == activePlayer) {
             for (let i = 0; i < unitsOnBoard.length; i++) {
-                for (let j = 0; j < unitsOnBoard[0].length; j++) {
+                for (let j = 0; j < unitsOnBoard[i].length; j++) {
                     if (unitsOnBoard[i][j] == selectedUnit) {
                         if (selectedUnit) {
                             unitsOnBoard[y][x] = clone(selectedUnit);
                             unitsOnBoard[i][j] = undefined;
+                            selectedUnit = undefined;
                             availableFields = [[], [], [], [], [], [], [], []];
                             board.show();
                             changeActivePlayer();
                             showMenuActions();
-                            selectedUnit = undefined;
                         }
                     }
                 }
             }
         }
+
+        if (action == 'atack' && availableFields[y][x] === true && selectedUnit != undefined && selectedUnit.owner == activePlayer) {
+            atackUnit(x, y);
+            availableFields = [[], [], [], [], [], [], [], []];
+            selectedUnit = undefined;
+            changeActivePlayer();
+            board.show();
+            showMenuActions();
+        }
+
     }
 });
+
+function throwDice() {
+    var dice = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1];
+    document.getElementById('dice').style['display'] = 'inherit';
+    document.getElementById('dice-0').innerText = dice[0];
+    document.getElementById('dice-1').innerText = dice[1];
+    document.getElementById('dice-2').innerText = dice[2];
+    return dice;
+}
+
+function atackUnit(x, y) {
+    if (unitsOnBoard[y][x] === true) {
+        unitsOnBoard[y][x] = undefined;
+        return;
+    }
+
+    var dice = throwDice();
+
+    var damage = selectedUnit.atack - unitsOnBoard[y][x].shield;
+    if (unitsOnBoard[y][x].health === dice[0] + dice[1] + dice[2]) {
+        alert('Attack is blocked because of the dice!');
+        return;
+    } else if (dice[0] === 1 && dice[1] === 1 && dice[2] === 1) {
+        alert('Half attack because of the dice!');
+        damage /= 2;
+    }
+    unitsOnBoard[y][x].health -= damage;
+    score[activePlayer] += damage;
+    document.getElementById(`player-${activePlayer}-score`).innerText = `${score[activePlayer]}`;
+    if (unitsOnBoard[y][x].health <= 0) {
+        unitsOnBoard[y][x] = undefined;
+    }
+}
 
 function clone(src) {
     let target;
@@ -324,32 +502,40 @@ function showMenuPutUnits() {
 
 function showMenuActions() {
     document.getElementById('menu').innerHTML = 'Player ' + (activePlayer === 0 ? 'A' : 'B') + '<br>' +
-        '<label><input type="radio" name="unit" value="atack"> Atack</label><br>' +
-        '<label><input type="radio" name="unit" value="move" checked> Move</label><br>' +
-        '<label><input type="radio" name="unit" value="heal"> Heal</label><br>';
+        '<label><input type="radio" name="unit" value="atack"' + (action == 'atack' ? ' checked' : '') + '> Atack</label><br>' +
+        '<label><input type="radio" name="unit" value="move"' + (action == 'move' ? ' checked' : '') + '> Move</label><br>' +
+        '<label><input type="radio" name="unit" value="heal"' + (action == 'heal' ? ' checked' : '') + '> Heal</label><br>';
 }
 
 
-// showMenuPutUnits();
-// board.hideForbiddenFields();
+board.hideForbiddenFields();
+showMenuPutUnits();
+// action = 'move';
+// showMenuActions();
+// stage = 1;
 
-unitsOnBoard[1][1] = new Knight();
-unitsOnBoard[1][2] = new Dwarf();
-unitsOnBoard[1][3] = new Knight();
-unitsOnBoard[3][5] = new Elf();
-unitsOnBoard[1][5] = new Elf();
-unitsOnBoard[1][6] = new Dwarf();
-activePlayer = 1;
+// activePlayer = 0;
+// unitsOnBoard[2][2] = new Dwarf();
+// unitsOnBoard[2][3] = new Knight();
+// unitsOnBoard[2][5] = new Elf();
+// unitsOnBoard[2][6] = new Dwarf();
+// unitsOnBoard[3][5] = new Elf();
+// unitsOnBoard[4][1] = new Knight();
 
-unitsOnBoard[5][0] = new Knight();
-unitsOnBoard[5][1] = new Knight();
-unitsOnBoard[5][2] = new Elf();
-unitsOnBoard[5][3] = new Elf();
-unitsOnBoard[4][4] = new Dwarf();
-unitsOnBoard[5][5] = new Dwarf();
+// activePlayer = 1;
+// unitsOnBoard[1][4] = new Dwarf();
+// unitsOnBoard[5][4] = new Knight();
+// unitsOnBoard[0][7] = new Knight();
+// unitsOnBoard[3][2] = new Elf();
+// unitsOnBoard[2][4] = new Elf();
+// unitsOnBoard[2][2] = new Elf();
+// unitsOnBoard[1][3] = new Elf();
+// unitsOnBoard[3][3] = new Elf();
+// unitsOnBoard[5][1] = new Knight();
+// unitsOnBoard[5][2] = new Elf();
 
-stage = 1;
 activePlayer = 0;
+
 
 function generateObstacles() {
     var obstacles = Math.floor(Math.random() * 5) + 1;
@@ -365,9 +551,9 @@ function generateObstacles() {
 }
 
 
-generateObstacles();
-showMenuActions();
-unitsOnBoard[2][5] = true;
-unitsOnBoard[0][6] = true;
-unitsOnBoard[1][7] = true;
+// generateObstacles();
+// unitsOnBoard[3][3] = true;
+// unitsOnBoard[4][4] = true;
+// unitsOnBoard[2][2] = true;
+// showMenuActions();
 board.show();
