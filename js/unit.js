@@ -491,7 +491,7 @@ function showStatistics() {
     var statistics = document.getElementById('statistics');
     statistics.style['display'] = 'inherit';
     statistics.innerText = 'Player ' + (activePlayer === 0 ? 'A' : 'B') + ' wins\n\n';
-    statistics.innerText += `Rounds: ${roundNumber}\n`;
+    statistics.innerText += `Rounds: ${roundNumber}\n\n\n`;
 
     statistics.innerText += 'Player A\n';
     statistics.innerText += `Score: ${score[0]}\n`;
