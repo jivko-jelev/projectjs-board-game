@@ -1,10 +1,14 @@
 availableFields = [[], [], [], [], [], [], []];
-var activePlayer=0;
-var stage=0;
-var roundNumber = 0;
+var activePlayer = 0;
+var stage = 0;
+var roundNumber = 1;
 var score = [0, 0];
 var selectedUnit;
 var action = 'atack';
+var destroyedUnits = [];
+destroyedUnits[0] = [];
+destroyedUnits[1] = [];
+
 board.hideForbiddenFields();
 
 class Unit {
@@ -40,6 +44,7 @@ function changeActivePlayer() {
     activePlayer = activePlayer === 0 ? 1 : 0;
     selectedUnit = undefined;
     board.show();
+    roundNumber++;
 }
 
 function fieldIsFree(x, y) {
@@ -374,6 +379,7 @@ board.canvas.addEventListener("click", function (e) {
             } else if (action !== undefined && action === 'atack') {
                 showAvailableFieldsForAtack();
             }
+            return;
         }
 
         if (action == 'move' && availableFields[y][x] === true && selectedUnit != undefined && selectedUnit.owner == activePlayer) {
@@ -392,6 +398,7 @@ board.canvas.addEventListener("click", function (e) {
                     }
                 }
             }
+            return;
         }
 
         if (action == 'atack' && availableFields[y][x] === true && selectedUnit != undefined && selectedUnit.owner == activePlayer) {
@@ -401,6 +408,7 @@ board.canvas.addEventListener("click", function (e) {
             changeActivePlayer();
             board.show();
             showMenuActions();
+            return;
         }
 
         if (action == 'heal' && selectedUnit != undefined && selectedUnit.owner == activePlayer) {
@@ -426,8 +434,10 @@ function unitHeal(x, y) {
     selectedUnit.health += dice;
 
     dice = Math.floor(Math.random() * 6) + 1;
-    if(!(dice & 1)) {
+    if (!(dice & 1)) {
         changeActivePlayer();
+    } else {
+        roundNumber++;
     }
 }
 
@@ -460,7 +470,40 @@ function atackUnit(x, y) {
     score[activePlayer] += damage;
     document.getElementById(`player-${activePlayer}-score`).innerText = `${score[activePlayer]}`;
     if (unitsOnBoard[y][x].health <= 0) {
+        destroyedUnits[activePlayer === 0 ? 1 : 0][destroyedUnits[activePlayer === 0 ? 1 : 0].length] = unitsOnBoard[y][x].constructor.name;
         unitsOnBoard[y][x] = undefined;
+        var atackedPlayer = activePlayer === 0 ? 1 : 0;
+        for (let i = 0; i < 7; i++) {
+            for (let j = 0; j < 9; j++) {
+                if (unitsOnBoard[i][j] !== undefined && (unitsOnBoard[i][j] instanceof Dwarf ||
+                    unitsOnBoard[i][j] instanceof Knight || unitsOnBoard[i][j] instanceof Elf)
+                    && unitsOnBoard[i][j].owner === atackedPlayer) {
+                    return;
+                }
+            }
+        }
+        stage = 2;
+        showStatistics();
+    }
+}
+
+function showStatistics() {
+    var statistics = document.getElementById('statistics');
+    statistics.style['display'] = 'inherit';
+    statistics.innerText = `Rounds: ${roundNumber}\n`;
+
+    statistics.innerText += 'Player A\n';
+    statistics.innerText += `Score: ${score[0]}\n`;
+    statistics.innerText += `Losts:\n`;
+    for (let i = 0; i < destroyedUnits[0].length; i++) {
+        statistics.innerText += `${i + 1}. ${destroyedUnits[0][i]}\n`;
+    }
+
+    statistics.innerText += '\n\nPlayer B\n';
+    statistics.innerText += `Score: ${score[1]}\n`;
+    statistics.innerText += `Losts:\n`;
+    for (let i = 0; i < destroyedUnits[1].length; i++) {
+        statistics.innerText += `${i + 1}. ${destroyedUnits[1][i]}\n`;
     }
 }
 
@@ -555,38 +598,29 @@ function generateObstacles() {
     }
 }
 
+function init() {
+    document.getElementById('statistics').style['display'] = 'none';
+    board = new Board();
+    board.show();
+    availableFields = [[], [], [], [], [], [], []];
+    unitsOnBoard = [[], [], [], [], [], [], [], []];
+    activePlayer = 0;
+    stage = 0;
+    roundNumber = 1;
+    score = [0, 0];
+    document.getElementById('player-0-score').innerText = '0';
+    document.getElementById('player-1-score').innerText = '0';
+    selectedUnit;
+    action = 'move';
+    board.hideForbiddenFields();
+    destroyedUnits = [];
+    destroyedUnits[0] = [];
+    destroyedUnits[1] = [];
+    showMenuPutUnits();
+}
 
-board.hideForbiddenFields();
-// action = 'move';
-// showMenuActions();
-// stage = 1;
-//
-// activePlayer = 0;
-// unitsOnBoard[2][2] = new Dwarf();
-// unitsOnBoard[2][3] = new Knight();
-// unitsOnBoard[2][5] = new Elf();
-// unitsOnBoard[2][6] = new Dwarf();
-// unitsOnBoard[3][5] = new Elf();
-// unitsOnBoard[4][1] = new Knight();
-//
-// activePlayer = 1;
-// unitsOnBoard[1][4] = new Dwarf();
-// unitsOnBoard[5][4] = new Knight();
-// unitsOnBoard[0][7] = new Knight();
-// unitsOnBoard[3][2] = new Elf();
-// unitsOnBoard[2][4] = new Elf();
-// unitsOnBoard[2][2] = new Elf();
-// unitsOnBoard[1][3] = new Elf();
-// unitsOnBoard[3][3] = new Elf();
-// unitsOnBoard[5][1] = new Knight();
-// unitsOnBoard[5][2] = new Elf();
-// generateObstacles();
-// board.show();
-//
-// activePlayer = 0;
-//
-// // unitsOnBoard[3][3] = true;
-// // unitsOnBoard[4][4] = true;
-// // unitsOnBoard[2][2] = true;
-// // showMenuActions();
-// // board.show();
+
+init();
+document.getElementById('new-game').addEventListener('click', function () {
+    init();
+})
