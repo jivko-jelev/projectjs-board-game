@@ -95,9 +95,7 @@ Board.prototype.showAvailableField = function (x, y) {
 Board.prototype.hideForbiddenFields = function () {
     for (let i = 0; i < 7; i++) {
         for (let j = 0; j < 9; j++) {
-
             if ((activePlayer === 0 && i > 1) || activePlayer === 1 && i < 5) {
-                // alert();
                 this.ctx.beginPath();
                 this.ctx.fillStyle = 'red';
                 this.ctx.fillRect(j * 100, i * 100, 100, 100);
@@ -117,6 +115,12 @@ Board.prototype.hideForbiddenFields = function () {
                     this.ctx.fillStyle = (unitsOnBoard[i][j].owner === 0 ? 'red' : 'blue');
                     this.ctx.font = "72px 'Titan One'";
                     this.ctx.fillText(unitsOnBoard[i][j].constructor.name.substring(0, 1), j * 100 + 20, i * 100 + 70);
+                    this.ctx.closePath();
+
+                    this.ctx.beginPath();
+                    this.ctx.fillStyle = (unitsOnBoard[i][j].owner === 0 ? 'red' : 'blue');
+                    this.ctx.font = "12px 'Titan One'";
+                    this.ctx.fillText(unitsOnBoard[i][j].constructor.name, j * 100 + 49 - unitsOnBoard[i][j].constructor.name.length * 3.7, i * 100 + 85);
                     this.ctx.closePath();
                 }
             }

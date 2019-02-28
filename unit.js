@@ -1,9 +1,11 @@
 availableFields = [[], [], [], [], [], [], []];
-var activePlayer = 0;
+var activePlayer=0;
+var stage=0;
+var roundNumber = 0;
 var score = [0, 0];
-var stage = 0;
 var selectedUnit;
 var action = 'atack';
+board.hideForbiddenFields();
 
 class Unit {
     constructor(atack, shield, health, atackingSquares, speed) {
@@ -192,8 +194,6 @@ function enemy(x, y) {
 function canAttack(x, y) {
     if (x >= 0 && x < 9 && y >= 0 && y < 7) {
         if (unitsOnBoard[y][x] !== undefined) {
-            // console.log(x + ':' + y);
-            // console.log(unitsOnBoard[y][x] === true);
             if (unitsOnBoard[y][x] === true) {
                 return true;
             }
@@ -266,7 +266,6 @@ function showAvailableFieldsForAtack() {
                 canAttack(position[1], position[0] - 3)) {
                 availableFields[position[0] - 3][position[1]] = true;
             }
-
         }
 
         board.show();
@@ -342,6 +341,7 @@ board.canvas.addEventListener("click", function (e) {
             }
         };
 
+
         document.getElementsByName('unit')[0].addEventListener('change', function () {
             action = getSelectedRadio();
             if (action === 'atack') {
@@ -354,8 +354,15 @@ board.canvas.addEventListener("click", function (e) {
             if (action === 'move') {
                 clearSelection();
                 showAvailableFieldsForMove();
-                // console.log(selectedUnit);
-                // console.log(activePlayer);
+            }
+        });
+        document.getElementsByName('unit')[2].addEventListener('change', function () {
+            action = getSelectedRadio();
+            if (action === 'heal') {
+                clearSelection();
+                selectedUnit = undefined;
+                board.show();
+                return;
             }
         });
         if (unitsOnBoard[y][x] !== undefined && unitsOnBoard[y][x].owner === activePlayer &&
@@ -369,7 +376,6 @@ board.canvas.addEventListener("click", function (e) {
             }
         }
 
-        // alert(action);
         if (action == 'move' && availableFields[y][x] === true && selectedUnit != undefined && selectedUnit.owner == activePlayer) {
             for (let i = 0; i < unitsOnBoard.length; i++) {
                 for (let j = 0; j < unitsOnBoard[i].length; j++) {
@@ -397,8 +403,33 @@ board.canvas.addEventListener("click", function (e) {
             showMenuActions();
         }
 
+        if (action == 'heal' && selectedUnit != undefined && selectedUnit.owner == activePlayer) {
+            unitHeal();
+        }
+
+        if (unitsOnBoard[y][x] !== undefined && unitsOnBoard[y][x].owner === activePlayer) {
+            selectedUnit = unitsOnBoard[y][x];
+            clearSelection();
+            if (action !== undefined && action === 'move') {
+                showAvailableFieldsForMove();
+            } else if (action !== undefined && action === 'atack') {
+                showAvailableFieldsForAtack();
+            }
+            board.show();
+        }
+
     }
 });
+
+function unitHeal(x, y) {
+    var dice = Math.floor(Math.random() * 6) + 1;
+    selectedUnit.health += dice;
+
+    dice = Math.floor(Math.random() * 6) + 1;
+    if(!(dice & 1)) {
+        changeActivePlayer();
+    }
+}
 
 function throwDice() {
     var dice = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1];
@@ -508,33 +539,7 @@ function showMenuActions() {
 }
 
 
-board.hideForbiddenFields();
 showMenuPutUnits();
-// action = 'move';
-// showMenuActions();
-// stage = 1;
-
-// activePlayer = 0;
-// unitsOnBoard[2][2] = new Dwarf();
-// unitsOnBoard[2][3] = new Knight();
-// unitsOnBoard[2][5] = new Elf();
-// unitsOnBoard[2][6] = new Dwarf();
-// unitsOnBoard[3][5] = new Elf();
-// unitsOnBoard[4][1] = new Knight();
-
-// activePlayer = 1;
-// unitsOnBoard[1][4] = new Dwarf();
-// unitsOnBoard[5][4] = new Knight();
-// unitsOnBoard[0][7] = new Knight();
-// unitsOnBoard[3][2] = new Elf();
-// unitsOnBoard[2][4] = new Elf();
-// unitsOnBoard[2][2] = new Elf();
-// unitsOnBoard[1][3] = new Elf();
-// unitsOnBoard[3][3] = new Elf();
-// unitsOnBoard[5][1] = new Knight();
-// unitsOnBoard[5][2] = new Elf();
-
-activePlayer = 0;
 
 
 function generateObstacles() {
@@ -551,9 +556,37 @@ function generateObstacles() {
 }
 
 
-// generateObstacles();
-// unitsOnBoard[3][3] = true;
-// unitsOnBoard[4][4] = true;
-// unitsOnBoard[2][2] = true;
+board.hideForbiddenFields();
+// action = 'move';
 // showMenuActions();
-board.show();
+// stage = 1;
+//
+// activePlayer = 0;
+// unitsOnBoard[2][2] = new Dwarf();
+// unitsOnBoard[2][3] = new Knight();
+// unitsOnBoard[2][5] = new Elf();
+// unitsOnBoard[2][6] = new Dwarf();
+// unitsOnBoard[3][5] = new Elf();
+// unitsOnBoard[4][1] = new Knight();
+//
+// activePlayer = 1;
+// unitsOnBoard[1][4] = new Dwarf();
+// unitsOnBoard[5][4] = new Knight();
+// unitsOnBoard[0][7] = new Knight();
+// unitsOnBoard[3][2] = new Elf();
+// unitsOnBoard[2][4] = new Elf();
+// unitsOnBoard[2][2] = new Elf();
+// unitsOnBoard[1][3] = new Elf();
+// unitsOnBoard[3][3] = new Elf();
+// unitsOnBoard[5][1] = new Knight();
+// unitsOnBoard[5][2] = new Elf();
+// generateObstacles();
+// board.show();
+//
+// activePlayer = 0;
+//
+// // unitsOnBoard[3][3] = true;
+// // unitsOnBoard[4][4] = true;
+// // unitsOnBoard[2][2] = true;
+// // showMenuActions();
+// // board.show();
