@@ -16,6 +16,7 @@ class Unit {
         this.atack = atack;
         this.shield = shield;
         this.health = health;
+        this.maxHealth = health;
         this.atackingSquares = atackingSquares;
         this.speed = speed;
         this.owner = activePlayer;
@@ -45,6 +46,7 @@ function changeActivePlayer() {
     selectedUnit = undefined;
     board.show();
     roundNumber++;
+    showMenuActions();
 }
 
 function fieldIsFree(x, y) {
@@ -378,7 +380,12 @@ board.canvas.addEventListener("click", function (e) {
                 showAvailableFieldsForMove();
             } else if (action !== undefined && action === 'atack') {
                 showAvailableFieldsForAtack();
+            } else if (action !== undefined && action === 'heal' && selectedUnit.owner == activePlayer) {
+                unitHeal(x, y);
+                clearSelection();
+                board.show();
             }
+
             return;
         }
 
@@ -411,10 +418,6 @@ board.canvas.addEventListener("click", function (e) {
             return;
         }
 
-        if (action == 'heal' && selectedUnit != undefined && selectedUnit.owner == activePlayer) {
-            unitHeal();
-        }
-
         if (unitsOnBoard[y][x] !== undefined && unitsOnBoard[y][x].owner === activePlayer) {
             selectedUnit = unitsOnBoard[y][x];
             clearSelection();
@@ -430,8 +433,10 @@ board.canvas.addEventListener("click", function (e) {
 });
 
 function unitHeal(x, y) {
+    console.log(x + ':' + y);
+    console.log(selectedUnit);
     var dice = Math.floor(Math.random() * 6) + 1;
-    selectedUnit.health += dice;
+    selectedUnit.health = selectedUnit.health + dice > selectedUnit.maxHealth ? selectedUnit.maxHealth : selectedUnit.health + dice;
 
     dice = Math.floor(Math.random() * 6) + 1;
     if (!(dice & 1)) {
@@ -555,16 +560,20 @@ function numUnits(unitName, activeP) {
 
 function showAvailableUnitsForPlayer() {
     var text = '';
+    var unitIsSelected = false;
     for (let i = numUnits('Knight'); i < 2; i++) {
-        text += '<label><input type="radio" name="unit" value="knight"> Knight</label><br>\n';
+        text += '<label><input type="radio" name="unit" value="knight" ' + (unitIsSelected === false ? 'checked' : '') + '> Knight</label><br>\n';
+        unitIsSelected = true;
     }
 
     for (let i = numUnits('Elf'); i < 2; i++) {
-        text += '<label><input type="radio" name="unit" value="elf"> Elf</label><br>\n';
+        text += '<label><input type="radio" name="unit" value="elf" ' + (unitIsSelected === false ? 'checked' : '') + '> Elf</label><br>\n';
+        unitIsSelected = true;
     }
 
     for (let i = numUnits('Dwarf'); i < 2; i++) {
-        text += '<label><input type="radio" name="unit" value="dwarf"> Dwarf</label><br>\n';
+        text += '<label><input type="radio" name="unit" value="dwarf" ' + (unitIsSelected === false ? 'checked' : '') + '> Dwarf</label><br>\n';
+        unitIsSelected = true;
     }
 
     return text;
@@ -582,9 +591,7 @@ function showMenuActions() {
         '<label><input type="radio" name="unit" value="heal"' + (action == 'heal' ? ' checked' : '') + '> Heal</label><br>';
 }
 
-
 showMenuPutUnits();
-
 
 function generateObstacles() {
     var obstacles = Math.floor(Math.random() * 5) + 1;
@@ -599,7 +606,7 @@ function generateObstacles() {
     }
 }
 
-function init() {
+function init(hideForbiddenCells = false) {
     document.getElementById('statistics').style['display'] = 'none';
     board = new Board();
     board.show();
@@ -623,5 +630,5 @@ function init() {
 
 init();
 document.getElementById('new-game').addEventListener('click', function () {
-    init();
+    init(true);
 })

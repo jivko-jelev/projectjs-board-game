@@ -35,7 +35,7 @@ span {
 
 #menu {
     position: absolute;
-    left: 1200px;
+    left: calc(50% + 500px);
     top: 50px;
 }
 
@@ -57,7 +57,7 @@ span {
 
 #dice{
     position: absolute;
-    left: 1180px;
+    left: calc(50% + 500px);
     top: 320px;
     font-size: 42px;
     display: none;
@@ -114,5 +114,5 @@ span {
 #statistics{
     position: absolute;
     top: 40px;
-    left: 50px;
+    left: calc(50% - 600px);
 }
